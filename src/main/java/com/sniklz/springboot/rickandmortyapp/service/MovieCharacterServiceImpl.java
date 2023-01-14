@@ -64,7 +64,7 @@ public class MovieCharacterServiceImpl implements MovieCharacterService {
         return characterRepository.findAllByNameContains(namePart);
     }
 
-    private void saveDtosToDB(ApiResponseDto apiResponseDto) {
+    void saveDtosToDB(ApiResponseDto apiResponseDto) {
         Map<Long, ApiCharacterDto> externalDtos = Arrays.stream(apiResponseDto.getResults())
                 .collect(Collectors.toMap(ApiCharacterDto::getId, Function.identity()));
 

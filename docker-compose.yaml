@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14.1
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_ROOT_PASSWORD=$POSTGRES_ROOT_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DATABASE
+    ports:
+      - $POSTGRES_LOCAL_PORT:$POSTGRES_DOCKER_PORT
+  app:
+    depends_on:
+      - postgres
+    image: sniklz/rick_and_morty-app
+    build: .
+    env_file: ./.env
+    ports:
+      - $SPRING_LOCAL_PORT:$SPRING_DOCKER_PORT
+      - $DEBUG_PORT:$DEBUG_PORT
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url" : "jdbc:postgresql://postgres:$POSTGRES_DOCKER_PORT/$POSTGRES_DATABASE?serverTiфывmezone=UTC",
+        "spring.datasource.username" : "$POSTGRES_USER",
+        "spring.datasource.password" : "$POSTGRES_ROOT_PASSWORD",
+        "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+        "spring.jpa.hibernate.ddl-auto" : "validate"
+      }'
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+

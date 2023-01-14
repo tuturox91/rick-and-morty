@@ -60,8 +60,12 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.10</version>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>spring-mock-mvc</artifactId>
+        </dependency>
 
+    </dependencies>
     <build>
         <plugins>
             <plugin>
