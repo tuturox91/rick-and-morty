@@ -1,10 +1,12 @@
-package com.sniklz.springboot.rickandmortyapp.service;
+package com.sniklz.springboot.rickandmortyapp.service.impl;
 
 import com.sniklz.springboot.rickandmortyapp.dto.external.ApiCharacterDto;
 import com.sniklz.springboot.rickandmortyapp.dto.external.ApiResponseDto;
 import com.sniklz.springboot.rickandmortyapp.dto.mapper.MovieCharacterMapper;
 import com.sniklz.springboot.rickandmortyapp.model.MovieCharacter;
 import com.sniklz.springboot.rickandmortyapp.repository.MovieCharacterRepository;
+import com.sniklz.springboot.rickandmortyapp.service.HttpClient;
+import com.sniklz.springboot.rickandmortyapp.service.MovieCharacterService;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -42,11 +44,12 @@ public class MovieCharacterServiceImpl implements MovieCharacterService {
                 ApiResponseDto.class);
 
         saveDtosToDB(apiResponseDto);
-
+        updateExistingCharacters(apiResponseDto);
         while (apiResponseDto.getInfo().getNext() != null) {
             apiResponseDto = httpClient.get(apiResponseDto.getInfo().getNext(),
                     ApiResponseDto.class);
             saveDtosToDB(apiResponseDto);
+            updateExistingCharacters(apiResponseDto);
         }
 
     }
@@ -64,12 +67,21 @@ public class MovieCharacterServiceImpl implements MovieCharacterService {
         return characterRepository.findAllByNameContains(namePart);
     }
 
-    void saveDtosToDB(ApiResponseDto apiResponseDto) {
+    private void saveDtosToDB(ApiResponseDto apiResponseDto) {
         Map<Long, ApiCharacterDto> externalDtos = Arrays.stream(apiResponseDto.getResults())
                 .collect(Collectors.toMap(ApiCharacterDto::getId, Function.identity()));
 
         Set<Long> externalIds = externalDtos.keySet();
 
+        Set<Long> characterIdsToSave = removeExistingCharacterById(externalIds);
+
+        List<MovieCharacter> charactersToSave = characterIdsToSave.stream()
+                .map(i -> mapper.parseApiCharacterResponseDto(externalDtos.get(i))).toList();
+
+        characterRepository.saveAll(charactersToSave);
+    }
+
+    Set<Long> removeExistingCharacterById(Set<Long> externalIds) {
         List<MovieCharacter> existingCharacters =
                 characterRepository.findAllByExternalIdIn(externalIds);
 
@@ -81,11 +93,18 @@ public class MovieCharacterServiceImpl implements MovieCharacterService {
 
         externalIds.removeAll(existingIds);
 
-        List<MovieCharacter> charactersToSave = externalIds
-                .stream()
-                .map(i -> mapper.parseApiCharacterResponseDto(externalDtos.get(i)))
-                .collect(Collectors.toList());
+        return externalIds;
+    }
 
-        characterRepository.saveAll(charactersToSave);
+    private void updateExistingCharacters(ApiResponseDto apiResponseDto) {
+        Map<Long, ApiCharacterDto> externalDtos = Arrays.stream(apiResponseDto.getResults())
+                .collect(Collectors.toMap(ApiCharacterDto::getId, Function.identity()));
+
+        Set<Long> externalIds = externalDtos.keySet();
+
+        List<MovieCharacter> existingCharacters =
+                characterRepository.findAllByExternalIdIn(externalIds);
+
+        characterRepository.saveAll(existingCharacters);
     }
 }
