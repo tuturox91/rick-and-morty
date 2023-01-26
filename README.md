@@ -1,4 +1,4 @@
-# 🎞️ Rick and Morty 🎞️
+# :movie_camera: Rick and Morty
 
 A RESTful web application that downloads information from a third-party API or searches need data in database. 
 
@@ -25,5 +25,5 @@ The project is divided into several logical levels:
 
 ## 🛠️ Setup guide
 
-You can find setup guide in guthub [wiki](https://github.com/tuturox91/Cinema-Service/wiki/Start-work-with-project "wiki").
+You can find setup guide in guthub [wiki](https://github.com/tuturox91/rick-and-morty/wiki/Start-work-with-project).
    
