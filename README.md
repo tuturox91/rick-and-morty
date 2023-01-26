@@ -23,9 +23,6 @@ The project is divided into several logical levels:
   * Repository: Interacts with the chosen way to persist data. Another name for this layer is the data access layer.
   * Data tier: data store/retrieve layer.
 
-### 🖼️ DB/Model structure
-![img.png](img.png)
-
 ## 🛠️ Setup guide
 
 You can find setup guide in guthub [wiki](https://github.com/tuturox91/Cinema-Service/wiki/Start-work-with-project "wiki").
